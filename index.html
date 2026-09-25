@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="早报档案馆">
+<meta name="theme-color" content="#172a44">
+<link rel="manifest" href="/report-pwa/manifest.json">
+<link rel="icon" type="image/png" sizes="48x48" href="/report-pwa/icon-48.png">
+<link rel="apple-touch-icon" sizes="192x192" href="/report-pwa/icon-192.png">
+<title>早报档案馆</title>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'HarmonyOS Sans','PingFang SC','Microsoft YaHei',sans-serif;background:#f0f2f5;color:#1a1a2e;min-height:100vh;-webkit-tap-highlight-color:transparent;-webkit-font-smoothing:antialiased}
+.header{background:linear-gradient(135deg,#172a44,#1e3a5f);padding:20px 16px 28px;color:#fff;padding-top:max(20px,env(safe-area-inset-top))}
+.header h1{font-size:22px;font-weight:700;margin-bottom:4px;letter-spacing:-.3px}
+.header .sub{font-size:13px;opacity:.8;font-weight:400}
+.search-wrap{margin:14px 16px 0;display:flex;gap:8px}
+.search-wrap input{flex:1;padding:10px 14px;border-radius:10px;border:none;font-size:15px;background:rgba(255,255,255,.15);color:#fff;outline:none;-webkit-appearance:none}
+.search-wrap input::placeholder{color:rgba(255,255,255,.45)}
+.search-wrap button{background:rgba(255,255,255,.18);border:none;border-radius:10px;padding:10px 18px;color:#fff;font-size:14px;font-weight:500;cursor:pointer;white-space:nowrap;-webkit-tap-highlight-color:transparent}
+.stats{display:flex;gap:6px;padding:12px 16px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.stats::-webkit-scrollbar{display:none}
+.stat-chip{background:#fff;border-radius:20px;padding:7px 12px;font-size:11px;color:#555;white-space:nowrap;box-shadow:0 2px rgba(0,0,0,.04);flex-shrink:0}
+.stat-chip b{color:#172a44;font-weight:600}
+.day-list{padding:12px 16px 80px}
+.day-card{background:#fff;border-radius:14px;padding:16px;margin-bottom:10px;box-shadow:0 iatetheimer3px rgba(0,0,0,.04);cursor:pointer;transition:transform .15s}
+.day-card:active{transform:scale(.98)}
+.day-card .date-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.day-card .date{font-size:16px;font-weight:700;color:#172a44}
+.day-card .dots{display:flex;gap:4px}
+.day-card .dot{width:ia 7px;height:7px;border-radius:50%}
+.dot-red{background:#e74c3c}.dot-green{background:#27ae60}.dot-grey{background:#95a5a6}
+.day-card .summary{font-size:13px;color:#555;line-height:1.55;margin-top:2px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.day-card .detail{display:none;margin-top:12px;padding-top:12px;border-top:1px solid #eee}
+.day-card.open .detail{display:block}
+.day-card.open .summary{-webkit-line-clamp:unset;overflow:visible}
+.detail-section{margin-bottom:10px}
+.detail-section .label{font-size:11px;color:#999;letter-spacing:.5px;margin-bottom:3px;text-transform:uppercase}
+.detail-section .value{font-size:14px;color:#333;line-height:1.65}
+.empty-state{text-align:center;padding:60px 20px;color:#999}
+.empty-state .icon{font-size:48px;margin-bottom:12px}
+.empty-state p{font-size:15px;margin-bottom:4px}
+.empty-state small{font-size:12px;color:#bbb}
+.fab{position:fixed;bottom:max(20px,env(safe-area-inset-bottom,20px));right:20px;width:52px;height:52px;border-radius:50%;background:#172a44;color:#fff;border:none;font-size:22px;box-shadow:0 4px 16px rgba(23,42,68,.35);cursor:pointer;z-index:200;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;transition:transform .2s}
+.fab:active{transform:scale(.9)}
+.offline-banner{background:#ff6b35;color:#fff;text-align:center;padding:6px;font-size:12px;display:none}
+.offline-banner.show{display:block}
+@media(min-width:768px){.day-list,.stats,.search-wrap{max-width:640px;margin-left:auto;margin-right:auto}.header{padding-left:calc(50% - 320px);padding-right:calc(50% - 320px)}}
+</style>
+</head>
+<body>
+<div class="offline-banner" id="offlineBanner">📡 离线模式 · 显示缓存数据</div>
+<div class="header">
+<h1>📊 早报档案馆</h1>
+<div class="sub">焦煤·铝矿行情 + 健康简报 · 每日自动归档</div>
+<div class="search-wrap">
+<input type="search" id="searchInput" placeholder="搜索日期 如 09-25..." oninput="filterDays()">
+<button onclick="scrollToToday()">📅 今天</button>
+</div>
+</div>
+<div class="stats" id="statsRow"></div>
+<div class="day-list" id="dayList"></div>
+<button class="fab" onclick="scrollToToday()" title="回到今天">📅</button>
+<script>
+// Register Service Worker for offline support
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('/report-pwa/sw.js').then(function(reg){
+    console.log('SW registered');
+  }).catch(function(err){
+    console.log('SW failed:', err);
+  });
+}
+
+// Data store - will be updated by daily cron
+var REPORTS = [{"date":"2026-09-25","label":"09-25 周四","market":{"status":"red","summary":"竞拍遇冷：流拍率93.1%，焦煤现货2358.75(-0.63%)，焦炭港口准一干熄2070(-10) | 铝锭A00 24270(+130)","detail":"【焦煤竞拍】山西线上竞拍挂牌27.5万t，成交仅1.9万t，流拍率93.1%；起拍价普跌50~100元仍大批流拍（晋邦德/四通全流拍）。吕梁离石低硫主焦成交均价2409(-148)；柳林中硫主焦2260(-70)。焦煤现货2358.75元/吨(-0.63%)。\n【焦炭】港口准一级湿熄1930(+10)、准一级干熄2070(-10)；焦煤主力收1503(-25.5)、焦炭主力收1968.5(-18.5)。\n【铝锭】A00 24270元/吨(+130)；中铝华东24320/华南24550/西南24370/中原24230。氧化铝现货山东2725/河南2765。几内亚铝土矿CIF 71.8美元/吨(+1.8)。"},"health":{"status":"grey","summary":"手表数据待同步（华为健康App绑定后自动获取）","detail":"⌚ 华为手表数据尚未同步。请确保华为健康App已绑定手表并开启数据同步。同步后每日自动采集：心率、睡眠、步数、体重/体脂等。"}}];
+
+// Save to localStorage for offline access
+function saveData(){try{localStorage.setItem('reports_data',JSON.stringify(REPORTS))}catch(e){}}
+function loadData(){try{var d=localStorage.getItem('reports_data');if(d){var parsed=JSON.parse(d);if(parsed.length>REPORTS.length)REPORTS=parsed}}catch(e){}}
+loadData();saveData();
+
+function renderStats(){
+  var total=REPORTS.length;
+  var thisMonth=REPORTS.filter(function(r){return r.date.startsWith('2026-09')}).length;
+  document.getElementById('statsRow').innerHTML='<div class="stat-chip">📅 <b>'+total+'</b> 天存档</div><div class="stat-chip">📆 本月 <b>'+thisMonth+'</b> 天</div><div class="stat-chip">🪨 焦煤+铝矿</div><div class="stat-chip">❤️ 健康简报</div>';
+}
+function renderDays(filterText){
+  var container=document.getElementById('dayList');
+  var filtered=REPORTS;
+  if(filterText&&filterText.trim()){
+    var q=filterText.trim().toLowerCase();
+    filtered=REPORTS.filter(function(r){return r.date.indexOf(q)!==-1||r.label.toLowerCase().indexOf(q)!==-1});
+  }
+  if(filtered.length===0){
+    container.innerHTML='<div class="empty-state"><div class="icon">📭</div><p>没有找到匹配的日期</p><small>试试搜 "09-25"</small></div>';
+    return;
+  }
+  container.innerHTML=filtered.map(function(r,i){
+    var m=r.market,h=r.health;
+    return '<div class="day-card" id="card-'+i+'" onclick="var el=document.getElementById(\'card-'+i+'\');el.classList.toggle(\'open\')"><div class="date-row"><span class="date">📅 '+r.label+'</span><span class="dots"><span class="dot dot-'+m.status+'"></span><span class="dot dot-'+h.status+'"></span></span></div><div class="summary">🪨 '+m.summary+'</div><div class="summary" style="margin-top:2px">❤️ '+h.summary+'</div><div class="detail"><div class="detail-section"><div class="label">🪨 焦煤 · 铝矿行情详情</div><div class="value">'+m.detail.replace(/\n/g,'<br>')+'</div></div><div class="detail-section"><div class="label">❤️ 健康简报</div><div class="value">'+h.detail.replace(/\n/g,'<br>')+'</div></div></div></div>';
+  }).join('');
+}
+function filterDays(){renderDays(document.getElementById('searchInput').value)}
+function scrollToToday(){document.getElementById('searchInput').value='';renderDays();var card=document.querySelector('.day-card');if(card)card.scrollIntoView({behavior:'smooth'})}
+
+// Offline detection
+function updateOnlineStatus(){
+  var banner=document.getElementById('offlineBanner');
+  if(navigator.onLine){banner.classList.remove('show')}else{banner.classList.add('show')}
+}
+window.addEventListener('online',updateOnlineStatus);
+window.addEventListener('offline',updateOnlineStatus);
+updateOnlineStatus();
+
+renderStats();renderDays();
+</script>
+</body>
+</html>
