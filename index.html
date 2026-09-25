@@ -422,14 +422,14 @@ body {
 </style>
 </head>
 <body>
-<div class="offline-banner" id="offlineBanner">📡 OFFLINE MODE — CACHED DATA</div>
+<div class="offline-banner" id="offlineBanner">📡 离线模式 — 显示缓存数据</div>
 
 <!-- 启动闪屏：模拟原生 APP 启动画面 -->
 <div class="splash" id="splash">
   <div class="splash-core">
     <div class="splash-ring"></div>
     <div class="splash-title">J.A.R.V.I.S</div>
-    <div class="splash-sub">WELCOME BACK, SHIDONG</div>
+    <div class="splash-sub">系统启动中</div>
     <div class="splash-cn">欢迎世栋</div>
   </div>
 </div>
@@ -440,13 +440,13 @@ body {
     <h1>J.A.R.V.I.<span>S</span></h1>
   </div>
   <div class="status-line">
-    <span class="dot"></span> SYSTEM ACTIVE · 早报档案馆 v2.0 · 焦煤·铝矿 + 健康简报
+    <span class="dot"></span> 系统运行中 · 早报档案馆 · 焦煤铝矿 + 健康简报
   </div>
 </div>
 
 <div class="search-wrap">
-  <input type="search" id="searchInput" placeholder="SEARCH ARCHIVE..." oninput="filterDays()">
-  <button onclick="scrollToToday()">⌘ TODAY</button>
+  <input type="search" id="searchInput" placeholder="搜索历史档案..." oninput="filterDays()">
+  <button onclick="scrollToToday()">回到今天</button>
 </div>
 
 <div class="stats" id="statsRow"></div>
@@ -455,8 +455,8 @@ body {
 <button class="fab" onclick="goFullscreen()">⛶</button>
 
 <div class="status-bar">
-  <span><span class="status-dot"></span> ALL SYSTEMS OPERATIONAL</span>
-  <span id="lastUpdate">LAST SYNC: --</span>
+  <span><span class="status-dot"></span> 一切正常</span>
+  <span id="lastUpdate">上次同步: --</span>
 </div>
 
 <script>
@@ -491,12 +491,12 @@ setTimeout(function(){
   }
 }, 1000);
 
-var REPORTS = [{"date":"2026-09-25","label":"09-25 THU","market":{"status":"red","summary":"竞拍遇冷：流拍率93.1%，焦煤现货2358.75(-0.63%)，焦炭港口准一干熄2070(-10) | 铝锭A00 24270(+130)","detail":"【焦煤竞拍】山西线上竞拍挂牌27.5万t，成交仅1.9万t，流拍率93.1%；起拍价普跌50~100元仍大批流拍（晋邦德/四通全流拍）。吕梁离石低硫主焦成交均价2409(-148)；柳林中硫主焦2260(-70)。焦煤现货2358.75元/吨(-0.63%)。\n【焦炭】港口准一级湿熄1930(+10)、准一级干熄2070(-10)；焦煤主力收1503(-25.5)、焦炭主力收1968.5(-18.5)。\n【铝锭】A00 24270元/吨(+130)；中铝华东24320/华南24550/西南24370/中原24230。氧化铝现货山东2725/河南2765。几内亚铝土矿CIF 71.8美元/吨(+1.8)。"},"health":{"status":"grey","summary":"手表数据待同步（华为健康App绑定后自动获取）","detail":"⌚ 华为手表数据尚未同步。请确保华为健康App已绑定手表并开启数据同步。同步后每日自动采集：心率、睡眠、步数、体重/体脂等。"}}];
+var REPORTS = [{"date":"2026-09-25","label":"09-25 周四","market":{"status":"red","summary":"竞拍遇冷：流拍率93.1%，焦煤现货2358.75(-0.63%)，焦炭港口准一干熄2070(-10) | 铝锭A00 24270(+130)","detail":"【焦煤竞拍】山西线上竞拍挂牌27.5万t，成交仅1.9万t，流拍率93.1%；起拍价普跌50~100元仍大批流拍（晋邦德/四通全流拍）。吕梁离石低硫主焦成交均价2409(-148)；柳林中硫主焦2260(-70)。焦煤现货2358.75元/吨(-0.63%)。\n【焦炭】港口准一级湿熄1930(+10)、准一级干熄2070(-10)；焦煤主力收1503(-25.5)、焦炭主力收1968.5(-18.5)。\n【铝锭】A00 24270元/吨(+130)；中铝华东24320/华南24550/西南24370/中原24230。氧化铝现货山东2725/河南2765。几内亚铝土矿CIF 71.8美元/吨(+1.8)。"},"health":{"status":"grey","summary":"手表数据待同步（华为健康App绑定后自动获取）","detail":"⌚ 华为手表数据尚未同步。请确保华为健康App已绑定手表并开启数据同步。同步后每日自动采集：心率、睡眠、步数、体重/体脂等。"}}];
 
 function renderStats(){
   var t=REPORTS.length;
   var m=REPORTS.filter(function(r){return r.date.startsWith('2026-09')}).length;
-  document.getElementById('statsRow').innerHTML='<div class="stat-chip">📅 <b>'+t+'</b> DAYS</div><div class="stat-chip">📆 MTD <b>'+m+'</b></div><div class="stat-chip">🪨 COAL+AL</div><div class="stat-chip">❤️ HEALTH</div>';
+  document.getElementById('statsRow').innerHTML='<div class="stat-chip">📅 <b>'+t+'</b> 天</div><div class="stat-chip">本月 <b>'+m+'</b> 篇</div><div class="stat-chip">🪨 焦煤铝矿</div><div class="stat-chip">❤️ 健康简报</div>';
 }
 function renderDays(ft){
   var c=document.getElementById('dayList');
@@ -506,12 +506,12 @@ function renderDays(ft){
     f=REPORTS.filter(function(r){return r.date.indexOf(q)!==-1||r.label.toLowerCase().indexOf(q)!==-1});
   }
   if(f.length===0){
-    c.innerHTML='<div class="empty-state"><div class="icon">◈</div><p>NO DATA FOUND</p></div>';
+    c.innerHTML='<div class="empty-state"><div class="icon">◈</div><p>没有找到相关记录</p></div>';
     return;
   }
   c.innerHTML=f.map(function(r,i){
     var m=r.market,h=r.health;
-    return '<div class="day-card" id="card-'+i+'" onclick="var el=document.getElementById(\'card-'+i+'\');el.classList.toggle(\'open\')"><div class="date-row"><span class="date">📅 '+r.label+'</span><span class="dots"><span class="dot dot-'+m.status+'"></span><span class="dot dot-'+h.status+'"></span></span></div><div class="summary">🪨 '+m.summary+'</div><div class="summary" style="margin-top:2px">❤️ '+h.summary+'</div><div class="detail"><div class="detail-section"><div class="label">🪨 COAL · ALUMINUM MARKET</div><div class="value">'+m.detail.replace(/\n/g,'<br>')+'</div></div><div class="detail-section"><div class="label">❤️ HEALTH BRIEF</div><div class="value">'+h.detail.replace(/\n/g,'<br>')+'</div></div></div></div>';
+    return '<div class="day-card" id="card-'+i+'" onclick="var el=document.getElementById(\'card-'+i+'\');el.classList.toggle(\'open\')"><div class="date-row"><span class="date">📅 '+r.label+'</span><span class="dots"><span class="dot dot-'+m.status+'"></span><span class="dot dot-'+h.status+'"></span></span></div><div class="summary">🪨 '+m.summary+'</div><div class="summary" style="margin-top:2px">❤️ '+h.summary+'</div><div class="detail"><div class="detail-section"><div class="label">🪨 焦煤铝矿行情</div><div class="value">'+m.detail.replace(/\n/g,'<br>')+'</div></div><div class="detail-section"><div class="label">❤️ 健康简报</div><div class="value">'+h.detail.replace(/\n/g,'<br>')+'</div></div></div></div>';
   }).join('');
 }
 function filterDays(){renderDays(document.getElementById('searchInput').value)}
@@ -543,7 +543,7 @@ updateOnlineStatus();
 
 // Update last sync time
 var now=new Date();
-document.getElementById('lastUpdate').textContent='LAST SYNC: '+now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
+document.getElementById('lastUpdate').textContent='上次同步: '+now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
 
 renderStats();renderDays();
 </script>
