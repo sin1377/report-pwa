@@ -1,6 +1,6 @@
 {
-  "name": "J.A.R.V.I.S. 早报档案馆",
-  "short_name": "JARVIS",
+  "name": "世栋早报",
+  "short_name": "世栋早报",
   "description": "焦煤·铝矿行情 + 健康简报 + 市场情报，每日自动更新",
   "start_url": "/report-pwa/?source=pwa",
   "scope": "/report-pwa/",
