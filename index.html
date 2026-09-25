@@ -104,14 +104,9 @@ body {
 
 /* Search - holographic style */
 .search-wrap {
-  margin: 0 16px;
+  margin: 12px 0 0;
   display: flex;
   gap: 8px;
-  position: sticky;
-  top: 108px;
-  z-index: 99;
-  padding: 8px 0;
-  background: var(--bg-primary);
 }
 .search-wrap input {
   flex: 1;
@@ -442,11 +437,10 @@ body {
   <div class="status-line">
     <span class="dot"></span> 系统运行中 · 早报档案馆 · 焦煤铝矿 + 健康简报
   </div>
-</div>
-
-<div class="search-wrap">
-  <input type="search" id="searchInput" placeholder="搜索历史档案..." oninput="filterDays()">
-  <button onclick="scrollToToday()">回到今天</button>
+  <div class="search-wrap">
+    <input type="search" id="searchInput" placeholder="搜索历史档案..." oninput="filterDays()">
+    <button onclick="scrollToToday()">回到今天</button>
+  </div>
 </div>
 
 <div class="stats" id="statsRow"></div>
