@@ -5,108 +5,421 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="早报档案馆">
-<meta name="theme-color" content="#172a44">
+<meta name="apple-mobile-web-app-title" content="J.A.R.V.I.S.">
+<meta name="theme-color" content="#0a0e17">
 <link rel="manifest" href="/report-pwa/manifest.json">
 <link rel="icon" type="image/png" sizes="48x48" href="/report-pwa/icon-48.png">
 <link rel="apple-touch-icon" sizes="192x192" href="/report-pwa/icon-192.png">
-<title>早报档案馆</title>
+<title>J.A.R.V.I.S. — 早报档案馆</title>
 <style>
-*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
-body{font-family:-apple-system,BlinkMacSystemFont,'HarmonyOS Sans','PingFang SC','Microsoft YaHei',sans-serif;background:#f0f2f5;color:#1a1a2e;min-height:100vh;-webkit-tap-highlight-color:transparent;-webkit-font-smoothing:antialiased}
-.header{background:linear-gradient(135deg,#172a44,#1e3a5f);padding:20px 16px 28px;color:#fff;padding-top:max(20px,env(safe-area-inset-top))}
-.header h1{font-size:22px;font-weight:700;margin-bottom:4px;letter-spacing:-.3px}
-.header .sub{font-size:13px;opacity:.8;font-weight:400}
-.search-wrap{margin:14px 16px 0;display:flex;gap:8px}
-.search-wrap input{flex:1;padding:10px 14px;border-radius:10px;border:none;font-size:15px;background:rgba(255,255,255,.15);color:#fff;outline:none;-webkit-appearance:none}
-.search-wrap input::placeholder{color:rgba(255,255,255,.45)}
-.search-wrap button{background:rgba(255,255,255,.18);border:none;border-radius:10px;padding:10px 18px;color:#fff;font-size:14px;font-weight:500;cursor:pointer;white-space:nowrap;-webkit-tap-highlight-color:transparent}
-.stats{display:flex;gap:6px;padding:12px 16px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
-.stats::-webkit-scrollbar{display:none}
-.stat-chip{background:#fff;border-radius:20px;padding:7px 12px;font-size:11px;color:#555;white-space:nowrap;box-shadow:0 2px rgba(0,0,0,.04);flex-shrink:0}
-.stat-chip b{color:#172a44;font-weight:600}
-.day-list{padding:12px 16px 80px}
-.day-card{background:#fff;border-radius:14px;padding:16px;margin-bottom:10px;box-shadow:0 iatetheimer3px rgba(0,0,0,.04);cursor:pointer;transition:transform .15s}
-.day-card:active{transform:scale(.98)}
-.day-card .date-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
-.day-card .date{font-size:16px;font-weight:700;color:#172a44}
-.day-card .dots{display:flex;gap:4px}
-.day-card .dot{width:ia 7px;height:7px;border-radius:50%}
-.dot-red{background:#e74c3c}.dot-green{background:#27ae60}.dot-grey{background:#95a5a6}
-.day-card .summary{font-size:13px;color:#555;line-height:1.55;margin-top:2px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
-.day-card .detail{display:none;margin-top:12px;padding-top:12px;border-top:1px solid #eee}
-.day-card.open .detail{display:block}
-.day-card.open .summary{-webkit-line-clamp:unset;overflow:visible}
-.detail-section{margin-bottom:10px}
-.detail-section .label{font-size:11px;color:#999;letter-spacing:.5px;margin-bottom:3px;text-transform:uppercase}
-.detail-section .value{font-size:14px;color:#333;line-height:1.65}
-.empty-state{text-align:center;padding:60px 20px;color:#999}
-.empty-state .icon{font-size:48px;margin-bottom:12px}
-.empty-state p{font-size:15px;margin-bottom:4px}
-.empty-state small{font-size:12px;color:#bbb}
-.fab{position:fixed;bottom:max(20px,env(safe-area-inset-bottom,20px));right:20px;width:52px;height:52px;border-radius:50%;background:#172a44;color:#fff;border:none;font-size:22px;box-shadow:0 4px 16px rgba(23,42,68,.35);cursor:pointer;z-index:200;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;transition:transform .2s}
-.fab:active{transform:scale(.9)}
-.offline-banner{background:#ff6b35;color:#fff;text-align:center;padding:6px;font-size:12px;display:none}
-.offline-banner.show{display:block}
-@media(min-width:768px){.day-list,.stats,.search-wrap{max-width:640px;margin-left:auto;margin-right:auto}.header{padding-left:calc(50% - 320px);padding-right:calc(50% - 320px)}}
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
+
+:root {
+  --bg-primary: #0a0e17;
+  --bg-card: #111827;
+  --bg-card-hover: #1a2236;
+  --accent: #00d4ff;
+  --accent-glow: rgba(0,212,255,0.15);
+  --accent-dim: #007a99;
+  --warn: #ff6b35;
+  --warn-glow: rgba(255,107,53,0.15);
+  --success: #10b981;
+  --text-primary: #e2e8f0;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --border: #1e293b;
+  --border-glow: rgba(0,212,255,0.2);
+  --font-mono: 'JetBrains Mono', 'SF Mono', 'Cascadia Code', monospace;
+  --font-sans: -apple-system, BlinkMacSystemFont, 'HarmonyOS Sans', 'PingFang SC', sans-serif;
+}
+
+*{margin:0;padding:0;box-sizing:border-box}
+
+body {
+  font-family: var(--font-sans);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-font-smoothing: antialiased;
+  background-image:
+    radial-gradient(ellipse at 50% 0%, rgba(0,212,255,0.03) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 20%, rgba(0,212,255,0.02) 0%, transparent 50%);
+}
+
+/* Header - Arc Reactor style */
+.header {
+  background: linear-gradient(180deg, rgba(0,212,255,0.08) 0%, rgba(10,14,23,0) 100%);
+  padding: 24px 16px 20px;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+.header-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+.arc-reactor {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent), 0 0 20px var(--accent-glow);
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 8px var(--accent), 0 0 20px var(--accent-glow); }
+  50% { box-shadow: 0 0 12px var(--accent), 0 0 30px var(--accent-glow); }
+}
+.header h1 {
+  font-family: var(--font-mono);
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: manserif1px;
+  color: var(--text-primary);
+}
+.header h1 span {
+  color: var(--accent);
+}
+.header .status-line {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+}
+.header .status-line .dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--success);
+  margin-right: 6px;
+  box-shadow: 0 0 6px rgba(16,185,129,0.4);
+}
+
+/* Search - holographic style */
+.search-wrap {
+  margin: 0 16px;
+  display: flex;
+  gap: 8px;
+  position: sticky;
+  top: 108px;
+  z-index: 99;
+  padding: 8px 0;
+  background: var(--bg-primary);
+}
+.search-wrap input {
+  flex: 1;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.search-wrap input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-glow);
+}
+.search-wrap input::placeholder {
+  color: var(--text-muted);
+}
+.search-wrap button {
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  transition: all 0.2s;
+}
+.search-wrap button:active {
+  background: var(--accent-glow);
+  border-color: var(--accent);
+}
+
+/* Stats chips */
+.stats {
+  display: flex;
+  gap: 6px;
+  padding: 8px 16px 4px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.stats::-webkit-scrollbar { display: none }
+.stat-chip {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  font-family: var(--font-mono);
+  flex-shrink: 0;
+}
+.stat-chip b {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* Day cards */
+.day-list {
+  padding: 8px 16px 80px;
+}
+.day-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+.day-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 3px;
+  height: 100%;
+  background: var(--accent);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.day-card:active {
+  background: var(--bg-card-hover);
+  border-color: var(--border-glow);
+}
+.day-card.open::before {
+  opacity: 1;
+}
+.day-card .date-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.day-card .date {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: 0.3px;
+}
+.day-card .dots {
+  display: flex;
+  gap: 5px;
+}
+.day-card .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+.dot-red { background: var(--warn); box-shadow: 0 0 6px rgba(255,107,53,0.4); }
+.dot-green { background: var(--success); box-shadow: 0 0 6px rgba(16,185,129,0.4); }
+.dot-grey { background: var(--text-muted); }
+.day-card .summary {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.55;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.day-card .detail {
+  display: none;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+.day-card.open .detail { display: block }
+.day-card.open .summary { -webkit-line-clamp: unset; overflow: visible }
+.day-card.open {
+  border-color: var(--border-glow);
+}
+.detail-section {
+  margin-bottom: 10px;
+}
+.detail-section .label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--accent);
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+}
+.detail-section .value {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.65;
+}
+
+/* Empty state */
+.empty-state {
+  text-align: center;
+  padding: 80px 20px;
+  color: var(--text-muted);
+}
+.empty-state .icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+  opacity: 0.3;
+}
+.empty-state p {
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+/* FAB - arc reactor style */
+.fab {
+  position: fixed;
+  bottom: 24px;
+  right: 20px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--accent);
+  font-size: 18px;
+  cursor: pointer;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.丛r;
+  box-shadow: 0 0 20px var(--accent-glow);
+}
+.fab:active {
+  background: var(--accent-glow);
+  border-color: var(--accent);
+  box-shadow: 0 0 30px var(--accent-glow);
+}
+
+/* Footer status bar */
+.status-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 6px 16px;
+  background: rgba(10,14,23,0.95);
+  border-top: 1px solid var(--border);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+  z-index: 300;
+}
+.status-bar .status-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--success);
+  margin-right: 5px;
+  display: inline-block;
+  box-shadow: 0 0 5px rgba(16,185,129,0.4);
+}
+
+/* Offline banner */
+.offline-banner {
+  background: var(--warn);
+  color: #fff;
+  text-align: center;
+  padding: 4px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 1px;
+  display: none;
+}
+.offline-banner.show { display: block }
+
+@media(min-width: 768px) {
+  .day-list, .stats, .search-wrap { max-width: 640px; margin-left: auto; margin-right: auto }
+  .header { padding-left: calc(50% - 320px); padding-right: calc(50% - 320px) }
+}
 </style>
 </head>
 <body>
-<div class="offline-banner" id="offlineBanner">📡 离线模式 · 显示缓存数据</div>
+<div class="offline-banner" id="offlineBanner">📡 OFFLINE MODE — CACHED DATA</div>
+
 <div class="header">
-<h1>📊 早报档案馆</h1>
-<div class="sub">焦煤·铝矿行情 + 健康简报 · 每日自动归档</div>
+  <div class="header-top">
+    <div class="arc-reactor"></div>
+    <h1>J.A.R.V.I.<span>S</span></h1>
+  </div>
+  <div class="status-line">
+    <span class="dot"></span> SYSTEM ACTIVE · 早报档案馆 v2.0 · 焦煤·铝矿 + 健康简报
+  </div>
+</div>
+
 <div class="search-wrap">
-<input type="search" id="searchInput" placeholder="搜索日期 如 09-25..." oninput="filterDays()">
-<button onclick="scrollToToday()">📅 今天</button>
+  <input type="search" id="searchInput" placeholder="SEARCH ARCHIVE..." oninput="filterDays()">
+  <button onclick="scrollToToday()">⌘ TODAY</button>
 </div>
-</div>
+
 <div class="stats" id="statsRow"></div>
 <div class="day-list" id="dayList"></div>
-<button class="fab" onclick="scrollToToday()" title="回到今天">📅</button>
+
+<button class="fab" onclick="scrollToToday()">⌘</button>
+
+<div class="status-bar">
+  <span><span class="status-dot"></span> ALL SYSTEMS OPERATIONAL</span>
+  <span id="lastUpdate">LAST SYNC: --</span>
+</div>
+
 <script>
-// Register Service Worker for offline support
 if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('/report-pwa/sw.js').then(function(reg){
-    console.log('SW registered');
-  }).catch(function(err){
-    console.log('SW failed:', err);
-  });
+  navigator.serviceWorker.register('/report-pwa/sw.js');
 }
 
-// Data store - will be updated by daily cron
-var REPORTS = [{"date":"2026-09-25","label":"09-25 周四","market":{"status":"red","summary":"竞拍遇冷：流拍率93.1%，焦煤现货2358.75(-0.63%)，焦炭港口准一干熄2070(-10) | 铝锭A00 24270(+130)","detail":"【焦煤竞拍】山西线上竞拍挂牌27.5万t，成交仅1.9万t，流拍率93.1%；起拍价普跌50~100元仍大批流拍（晋邦德/四通全流拍）。吕梁离石低硫主焦成交均价2409(-148)；柳林中硫主焦2260(-70)。焦煤现货2358.75元/吨(-0.63%)。\n【焦炭】港口准一级湿熄1930(+10)、准一级干熄2070(-10)；焦煤主力收1503(-25.5)、焦炭主力收1968.5(-18.5)。\n【铝锭】A00 24270元/吨(+130)；中铝华东24320/华南24550/西南24370/中原24230。氧化铝现货山东2725/河南2765。几内亚铝土矿CIF 71.8美元/吨(+1.8)。"},"health":{"status":"grey","summary":"手表数据待同步（华为健康App绑定后自动获取）","detail":"⌚ 华为手表数据尚未同步。请确保华为健康App已绑定手表并开启数据同步。同步后每日自动采集：心率、睡眠、步数、体重/体脂等。"}}];
-
-// Save to localStorage for offline access
-function saveData(){try{localStorage.setItem('reports_data',JSON.stringify(REPORTS))}catch(e){}}
-function loadData(){try{var d=localStorage.getItem('reports_data');if(d){var parsed=JSON.parse(d);if(parsed.length>REPORTS.length)REPORTS=parsed}}catch(e){}}
-loadData();saveData();
+var REPORTS = [{"date":"2026-09-25","label":"09-25 THU","market":{"status":"red","summary":"竞拍遇冷：流拍率93.1%，焦煤现货2358.75(-0.63%)，焦炭港口准一干熄2070(-10) | 铝锭A00 24270(+130)","detail":"【焦煤竞拍】山西线上竞拍挂牌27.5万t，成交仅1.9万t，流拍率93.1%；起拍价普跌50~100元仍大批流拍（晋邦德/四通全流拍）。吕梁离石低硫主焦成交均价2409(-148)；柳林中硫主焦2260(-70)。焦煤现货2358.75元/吨(-0.63%)。\n【焦炭】港口准一级湿熄1930(+10)、准一级干熄2070(-10)；焦煤主力收1503(-25.5)、焦炭主力收1968.5(-18.5)。\n【铝锭】A00 24270元/吨(+130)；中铝华东24320/华南24550/西南24370/中原24230。氧化铝现货山东2725/河南2765。几内亚铝土矿CIF 71.8美元/吨(+1.8)。"},"health":{"status":"grey","summary":"手表数据待同步（华为健康App绑定后自动获取）","detail":"⌚ 华为手表数据尚未同步。请确保华为健康App已绑定手表并开启数据同步。同步后每日自动采集：心率、睡眠、步数、体重/体脂等。"}}];
 
 function renderStats(){
-  var total=REPORTS.length;
-  var thisMonth=REPORTS.filter(function(r){return r.date.startsWith('2026-09')}).length;
-  document.getElementById('statsRow').innerHTML='<div class="stat-chip">📅 <b>'+total+'</b> 天存档</div><div class="stat-chip">📆 本月 <b>'+thisMonth+'</b> 天</div><div class="stat-chip">🪨 焦煤+铝矿</div><div class="stat-chip">❤️ 健康简报</div>';
+  var t=REPORTS.length;
+  var m=REPORTS.filter(function(r){return r.date.startsWith('2026-09')}).length;
+  document.getElementById('statsRow').innerHTML='<div class="stat-chip">📅 <b>'+t+'</b> DAYS</div><div class="stat-chip">📆 MTD <b>'+m+'</b></div><div class="stat-chip">🪨 COAL+AL</div><div class="stat-chip">❤️ HEALTH</div>';
 }
-function renderDays(filterText){
-  var container=document.getElementById('dayList');
-  var filtered=REPORTS;
-  if(filterText&&filterText.trim()){
-    var q=filterText.trim().toLowerCase();
-    filtered=REPORTS.filter(function(r){return r.date.indexOf(q)!==-1||r.label.toLowerCase().indexOf(q)!==-1});
+function renderDays(ft){
+  var c=document.getElementById('dayList');
+  var f=REPORTS;
+  if(ft&&ft.trim()){
+    var q=ft.trim().toLowerCase();
+    f=REPORTS.filter(function(r){return r.date.indexOf(q)!==-1||r.label.toLowerCase().indexOf(q)!==-1});
   }
-  if(filtered.length===0){
-    container.innerHTML='<div class="empty-state"><div class="icon">📭</div><p>没有找到匹配的日期</p><small>试试搜 "09-25"</small></div>';
+  if(f.length===0){
+    c.innerHTML='<div class="empty-state"><div class="icon">◈</div><p>NO DATA FOUND</p></div>';
     return;
   }
-  container.innerHTML=filtered.map(function(r,i){
+  c.innerHTML=f.map(function(r,i){
     var m=r.market,h=r.health;
-    return '<div class="day-card" id="card-'+i+'" onclick="var el=document.getElementById(\'card-'+i+'\');el.classList.toggle(\'open\')"><div class="date-row"><span class="date">📅 '+r.label+'</span><span class="dots"><span class="dot dot-'+m.status+'"></span><span class="dot dot-'+h.status+'"></span></span></div><div class="summary">🪨 '+m.summary+'</div><div class="summary" style="margin-top:2px">❤️ '+h.summary+'</div><div class="detail"><div class="detail-section"><div class="label">🪨 焦煤 · 铝矿行情详情</div><div class="value">'+m.detail.replace(/\n/g,'<br>')+'</div></div><div class="detail-section"><div class="label">❤️ 健康简报</div><div class="value">'+h.detail.replace(/\n/g,'<br>')+'</div></div></div></div>';
+    return '<div class="day-card" id="card-'+i+'" onclick="var el=document.getElementById(\'card-'+i+'\');el.classList.toggle(\'open\')"><div class="date-row"><span class="date">📅 '+r.label+'</span><span class="dots"><span class="dot dot-'+m.status+'"></span><span class="dot dot-'+h.status+'"></span></span></div><div class="summary">🪨 '+m.summary+'</div><div class="summary" style="margin-top:2px">❤️ '+h.summary+'</div><div class="detail"><div class="detail-section"><div class="label">🪨 COAL · ALUMINUM MARKET</div><div class="value">'+m.detail.replace(/\n/g,'<br>')+'</div></div><div class="detail-section"><div class="label">❤️ HEALTH BRIEF</div><div class="value">'+h.detail.replace(/\n/g,'<br>')+'</div></div></div></div>';
   }).join('');
 }
 function filterDays(){renderDays(document.getElementById('searchInput').value)}
 function scrollToToday(){document.getElementById('searchInput').value='';renderDays();var card=document.querySelector('.day-card');if(card)card.scrollIntoView({behavior:'smooth'})}
 
-// Offline detection
 function updateOnlineStatus(){
   var banner=document.getElementById('offlineBanner');
   if(navigator.onLine){banner.classList.remove('show')}else{banner.classList.add('show')}
@@ -114,6 +427,10 @@ function updateOnlineStatus(){
 window.addEventListener('online',updateOnlineStatus);
 window.addEventListener('offline',updateOnlineStatus);
 updateOnlineStatus();
+
+// Update last sync time
+var now=new Date();
+document.getElementById('lastUpdate').textContent='LAST SYNC: '+now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
 
 renderStats();renderDays();
 </script>
