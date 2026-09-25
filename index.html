@@ -401,6 +401,19 @@ body {
   color: var(--text-muted);
   margin-top: 8px;
 }
+.splash-cn {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  letter-spacing: 6px;
+  color: var(--accent);
+  margin-top: 10px;
+  opacity: 0.9;
+  animation: splash-fade 1.2s ease-out;
+}
+@keyframes splash-fade {
+  0% { opacity: 0; letter-spacing: 12px; }
+  100% { opacity: 0.9; letter-spacing: 6px; }
+}
 
 @media(min-width: 768px) {
   .day-list, .stats, .search-wrap { max-width: 640px; margin-left: auto; margin-right: auto }
@@ -416,7 +429,8 @@ body {
   <div class="splash-core">
     <div class="splash-ring"></div>
     <div class="splash-title">J.A.R.V.I.S</div>
-    <div class="splash-sub">SYSTEM BOOTING...</div>
+    <div class="splash-sub">WELCOME BACK, SHIDONG</div>
+    <div class="splash-cn">欢迎世栋</div>
   </div>
 </div>
 
@@ -438,7 +452,7 @@ body {
 <div class="stats" id="statsRow"></div>
 <div class="day-list" id="dayList"></div>
 
-<button class="fab" onclick="scrollToToday()">⌘</button>
+<button class="fab" onclick="goFullscreen()">⛶</button>
 
 <div class="status-bar">
   <span><span class="status-dot"></span> ALL SYSTEMS OPERATIONAL</span>
@@ -502,6 +516,22 @@ function renderDays(ft){
 }
 function filterDays(){renderDays(document.getElementById('searchInput').value)}
 function scrollToToday(){document.getElementById('searchInput').value='';renderDays();var card=document.querySelector('.day-card');if(card)card.scrollIntoView({behavior:'smooth'})}
+
+// 全屏模式：隐藏浏览器地址栏，接近原生 APP 体验
+function goFullscreen(){
+  var el=document.documentElement;
+  var req=el.requestFullscreen||el.webkitRequestFullscreen||el.mozRequestFullScreen;
+  if(req){
+    req.call(el).catch(function(){});
+  }
+}
+// 退出全屏提示
+function exitFullscreen(){
+  if(document.fullscreenElement||document.webkitFullscreenElement){
+    var ex=document.exitFullscreen||document.webkitExitFullscreen;
+    if(ex)ex.call(document);
+  }
+}
 
 function updateOnlineStatus(){
   var banner=document.getElementById('offlineBanner');
