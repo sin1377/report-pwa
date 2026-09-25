@@ -1,6 +1,6 @@
 {
-  "name": "世栋早报",
-  "short_name": "世栋早报",
+  "name": "无敌世栋",
+  "short_name": "无敌世栋",
   "description": "焦煤·铝矿行情 + 健康简报 + 市场情报，每日自动更新",
   "start_url": "/report-pwa/?source=pwa",
   "scope": "/report-pwa/",
