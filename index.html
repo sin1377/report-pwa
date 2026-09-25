@@ -169,6 +169,11 @@ body {
   color: var(--accent);
   font-weight: 600;
 }
+.stat-chip.chip-active {
+  border-color: var(--accent);
+  background: var(--accent-glow);
+  color: var(--accent);
+}
 
 /* Day cards */
 .day-list {
@@ -487,10 +492,35 @@ setTimeout(function(){
 
 var REPORTS = [{"date":"2026-09-25","label":"09-25 周四","market":{"status":"red","summary":"竞拍遇冷：流拍率93.1%，焦煤现货2358.75(-0.63%)，焦炭港口准一干熄2070(-10) | 铝锭A00 24270(+130)","detail":"【焦煤竞拍】山西线上竞拍挂牌27.5万t，成交仅1.9万t，流拍率93.1%；起拍价普跌50~100元仍大批流拍（晋邦德/四通全流拍）。吕梁离石低硫主焦成交均价2409(-148)；柳林中硫主焦2260(-70)。焦煤现货2358.75元/吨(-0.63%)。\n【焦炭】港口准一级湿熄1930(+10)、准一级干熄2070(-10)；焦煤主力收1503(-25.5)、焦炭主力收1968.5(-18.5)。\n【铝锭】A00 24270元/吨(+130)；中铝华东24320/华南24550/西南24370/中原24230。氧化铝现货山东2725/河南2765。几内亚铝土矿CIF 71.8美元/吨(+1.8)。"},"health":{"status":"grey","summary":"手表数据待同步（华为健康App绑定后自动获取）","detail":"⌚ 华为手表数据尚未同步。请确保华为健康App已绑定手表并开启数据同步。同步后每日自动采集：心率、睡眠、步数、体重/体脂等。"}}];
 
+var FILTER_MODE = 'all'; // all | market | health
+
 function renderStats(){
   var t=REPORTS.length;
   var m=REPORTS.filter(function(r){return r.date.startsWith('2026-09')}).length;
-  document.getElementById('statsRow').innerHTML='<div class="stat-chip">📅 <b>'+t+'</b> 天</div><div class="stat-chip">本月 <b>'+m+'</b> 篇</div><div class="stat-chip">🪨 焦煤铝矿</div><div class="stat-chip">❤️ 健康简报</div>';
+  document.getElementById('statsRow').innerHTML=
+    '<div class="stat-chip" onclick="resetFilter()">📅 <b>'+t+'</b> 天</div>'+
+    '<div class="stat-chip" onclick="filterThisMonth()">本月 <b>'+m+'</b> 篇</div>'+
+    '<div class="stat-chip '+(FILTER_MODE==='market'?'chip-active':'')+'" onclick="setFilter(\'market\')">🪨 焦煤铝矿</div>'+
+    '<div class="stat-chip '+(FILTER_MODE==='health'?'chip-active':'')+'" onclick="setFilter(\'health\')">❤️ 健康简报</div>';
+}
+function setFilter(mode){
+  FILTER_MODE = (FILTER_MODE===mode) ? 'all' : mode;
+  renderStats();renderDays(document.getElementById('searchInput').value);
+}
+function resetFilter(){
+  FILTER_MODE='all';
+  document.getElementById('searchInput').value='';
+  renderStats();renderDays();
+  scrollToToday();
+}
+function filterThisMonth(){
+  var now=new Date();
+  var ym=now.getFullYear()+'-'+(now.getMonth()+1).toString().padStart(2,'0');
+  var input=document.getElementById('searchInput');
+  input.value=input.value===ym?'':ym;
+  FILTER_MODE='all';
+  renderStats();renderDays(input.value);
+}
 }
 function renderDays(ft){
   var c=document.getElementById('dayList');
@@ -505,7 +535,10 @@ function renderDays(ft){
   }
   c.innerHTML=f.map(function(r,i){
     var m=r.market,h=r.health;
-    return '<div class="day-card" id="card-'+i+'" onclick="var el=document.getElementById(\'card-'+i+'\');el.classList.toggle(\'open\')"><div class="date-row"><span class="date">📅 '+r.label+'</span><span class="dots"><span class="dot dot-'+m.status+'"></span><span class="dot dot-'+h.status+'"></span></span></div><div class="summary">🪨 '+m.summary+'</div><div class="summary" style="margin-top:2px">❤️ '+h.summary+'</div><div class="detail"><div class="detail-section"><div class="label">🪨 焦煤铝矿行情</div><div class="value">'+m.detail.replace(/\n/g,'<br>')+'</div></div><div class="detail-section"><div class="label">❤️ 健康简报</div><div class="value">'+h.detail.replace(/\n/g,'<br>')+'</div></div></div></div>';
+      return '<div class="day-card" id="card-'+i+'" onclick="var el=document.getElementById(\'card-'+i+'\');el.classList.toggle(\'open\')"><div class="date-row"><span class="date">📅 '+r.label+'</span><span class="dots"><span class="dot dot-'+m.status+'"></span><span class="dot dot-'+h.status+'"></span></span></div>'+
+      (FILTER_MODE!=='health'?'<div class="summary">🪨 '+m.summary+'</div>':'')+
+      (FILTER_MODE!=='market'?'<div class="summary" style="margin-top:2px">❤️ '+h.summary+'</div>':'')+
+      '<div class="detail"><div class="detail-section"><div class="label">🪨 焦煤铝矿行情</div><div class="value">'+m.detail.replace(/\n/g,'<br>')+'</div></div><div class="detail-section"><div class="label">❤️ 健康简报</div><div class="value">'+h.detail.replace(/\n/g,'<br>')+'</div></div></div></div>';
   }).join('');
 }
 function filterDays(){renderDays(document.getElementById('searchInput').value)}
