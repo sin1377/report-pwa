@@ -175,6 +175,60 @@ body {
   color: var(--accent);
 }
 
+/* 日期快跳条 */
+.date-jump {
+  display: flex;
+  gap: 6px;
+  padding: 6px 16px 2px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.date-jump::-webkit-scrollbar { display: none }
+.date-jump:empty { display: none }
+.date-pill {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 5px 12px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  font-family: var(--font-mono);
+  flex-shrink: 0;
+  cursor: pointer;
+}
+.date-pill.today {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.date-pill.pill-active {
+  background: var(--accent-glow);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+/* 筛选状态横幅 */
+.filter-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 6px 16px 0;
+  padding: 8px 12px;
+  background: var(--accent-glow);
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  font-size: 12px;
+  color: var(--accent);
+}
+.filter-banner .fb-clear {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0 4px;
+}
+
 /* Day cards */
 .day-list {
   padding: 8px 16px 80px;
@@ -449,6 +503,8 @@ body {
 </div>
 
 <div class="stats" id="statsRow"></div>
+<div class="date-jump" id="dateJump"></div>
+<div class="filter-banner" id="filterBanner" style="display:none"></div>
 <div class="day-list" id="dayList"></div>
 
 <button class="fab" onclick="goFullscreen()">⛶</button>
@@ -527,23 +583,64 @@ var REPORTS = [
 ];
 
 var FILTER_MODE = 'all'; // all | market | health | intel
+var JUMP_DATE = null;  // 当前选中的日期胶囊
 
 function renderStats(){
   var t=REPORTS.length;
-  var m=REPORTS.filter(function(r){return r.date.startsWith('2026-09')}).length;
+  var now=new Date();
+  var ymNow=now.getFullYear()+'-'+(now.getMonth()+1).toString().padStart(2,'0');
+  var m=REPORTS.filter(function(r){return r.date.slice(0,7)===ymNow}).length;
   document.getElementById('statsRow').innerHTML=
     '<div class="stat-chip" onclick="resetFilter()">📅 <b>'+t+'</b> 天</div>'+
-    '<div class="stat-chip" onclick="filterThisMonth()">本月 <b>'+m+'</b> 篇</div>'+
+    '<div class="stat-chip '+(FILTER_MODE==='month'?'chip-active':'')+'" onclick="filterThisMonth()">本月 <b>'+m+'</b> 篇</div>'+
     '<div class="stat-chip '+(FILTER_MODE==='market'?'chip-active':'')+'" onclick="setFilter(\'market\')">🪨 焦煤铝矿</div>'+
     '<div class="stat-chip '+(FILTER_MODE==='health'?'chip-active':'')+'" onclick="setFilter(\'health\')">❤️ 健康简报</div>'+
     '<div class="stat-chip '+(FILTER_MODE==='intel'?'chip-active':'')+'" onclick="setFilter(\'intel\')">🌍 市场情报</div>';
+  renderDateJump();
+  renderFilterBanner();
+}
+// 日期快跳胶囊条
+function renderDateJump(){
+  var c=document.getElementById('dateJump');
+  var pills=REPORTS.map(function(r){
+    var d=r.date.slice(5).replace('-','/');
+    var isToday=r.date===REPORTS[0].date;
+    var act=JUMP_DATE===r.date?' pill-active':'';
+    return '<div class="date-pill'+(isToday&&!JUMP_DATE?' today':'')+act+'" onclick="jumpToDate(\''+r.date+'\')">'+d+'</div>';
+  }).join('');
+  c.innerHTML=pills;
+}
+function jumpToDate(d){
+  JUMP_DATE=(JUMP_DATE===d)?null:d;
+  renderStats();
+  renderDays(document.getElementById('searchInput').value);
+  if(JUMP_DATE){
+    var idx=window.findCardByDate(JUMP_DATE);
+    var el=document.getElementById('card-'+idx);
+    if(el){el.scrollIntoView({behavior:'smooth',block:'start'});el.classList.add('open');setTimeout(function(){el.classList.remove('open')},2500);}
+  } else { scrollToToday(); }
+}
+// 筛选状态横幅
+function renderFilterBanner(){
+  var b=document.getElementById('filterBanner');
+  var txt=null;
+  if(FILTER_MODE==='market')txt='🪨 只看焦煤铝矿行情';
+  if(FILTER_MODE==='health')txt='❤️ 只看健康简报';
+  if(FILTER_MODE==='intel')txt='🌍 只看市场情报';
+  if(FILTER_MODE==='month')txt='📅 只看本月';
+  if(JUMP_DATE)txt='📌 只看 '+JUMP_DATE;
+  if(!txt){b.style.display='none';return;}
+  b.style.display='flex';
+  b.innerHTML='<span>'+txt+'</span><button class="fb-clear" onclick="resetFilter()">✕</button>';
 }
 function setFilter(mode){
   FILTER_MODE = (FILTER_MODE===mode) ? 'all' : mode;
+  JUMP_DATE=null;
   renderStats();renderDays(document.getElementById('searchInput').value);
 }
 function resetFilter(){
   FILTER_MODE='all';
+  JUMP_DATE=null;
   document.getElementById('searchInput').value='';
   renderStats();renderDays();
   scrollToToday();
@@ -552,8 +649,9 @@ function filterThisMonth(){
   var now=new Date();
   var ym=now.getFullYear()+'-'+(now.getMonth()+1).toString().padStart(2,'0');
   var input=document.getElementById('searchInput');
-  input.value=input.value===ym?'':ym;
-  FILTER_MODE='all';
+  FILTER_MODE=(FILTER_MODE==='month')?'all':'month';
+  JUMP_DATE=null;
+  if(FILTER_MODE==='month'){input.value=ym;}else{input.value='';}
   renderStats();renderDays(input.value);
 }
 function renderDays(ft){
@@ -580,6 +678,7 @@ function renderDays(ft){
 }
 function filterDays(){renderDays(document.getElementById('searchInput').value)}
 function scrollToToday(){document.getElementById('searchInput').value='';renderDays();var card=document.querySelector('.day-card');if(card)card.scrollIntoView({behavior:'smooth'})}
+window.findCardByDate=function(date){for(var i=0;i<REPORTS.length;i++){if(REPORTS[i].date===date)return i}return -1}
 
 // 全屏模式：隐藏浏览器地址栏，接近原生 APP 体验
 function goFullscreen(){
