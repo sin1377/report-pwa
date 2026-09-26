@@ -521,7 +521,7 @@ var REPORTS = [
   }
 ];
 
-var FILTER_MODE = 'all'; // all | market | health
+var FILTER_MODE = 'all'; // all | market | health | intel
 
 function renderStats(){
   var t=REPORTS.length;
@@ -530,7 +530,8 @@ function renderStats(){
     '<div class="stat-chip" onclick="resetFilter()">📅 <b>'+t+'</b> 天</div>'+
     '<div class="stat-chip" onclick="filterThisMonth()">本月 <b>'+m+'</b> 篇</div>'+
     '<div class="stat-chip '+(FILTER_MODE==='market'?'chip-active':'')+'" onclick="setFilter(\'market\')">🪨 焦煤铝矿</div>'+
-    '<div class="stat-chip '+(FILTER_MODE==='health'?'chip-active':'')+'" onclick="setFilter(\'health\')">❤️ 健康简报</div>';
+    '<div class="stat-chip '+(FILTER_MODE==='health'?'chip-active':'')+'" onclick="setFilter(\'health\')">❤️ 健康简报</div>'+
+    '<div class="stat-chip '+(FILTER_MODE==='intel'?'chip-active':'')+'" onclick="setFilter(\'intel\')">🌍 市场情报</div>';
 }
 function setFilter(mode){
   FILTER_MODE = (FILTER_MODE===mode) ? 'all' : mode;
@@ -562,11 +563,14 @@ function renderDays(ft){
     return;
   }
   c.innerHTML=f.map(function(r,i){
-    var m=r.market,h=r.health;
-      return '<div class="day-card" id="card-'+i+'" onclick="var el=document.getElementById(\'card-'+i+'\');el.classList.toggle(\'open\')"><div class="date-row"><span class="date">📅 '+r.label+'</span><span class="dots"><span class="dot dot-'+m.status+'"></span><span class="dot dot-'+h.status+'"></span></span></div>'+
+    var m=r.market,h=r.health,it=r.intel;
+      return '<div class="day-card" id="card-'+i+'" onclick="var el=document.getElementById(\'card-'+i+'\');el.classList.toggle(\'open\')"><div class="date-row"><span class="date">📅 '+r.label+'</span><span class="dots">'+(it?'<span class="dot dot-'+it.status+'"></span>':'')+'<span class="dot dot-'+m.status+'"></span><span class="dot dot-'+h.status+'"></span></span></div>'+
+      (it&&(FILTER_MODE==='all'||FILTER_MODE==='intel')?'<div class="summary">🌍 '+it.summary+'</div>':'')+
       (FILTER_MODE!=='health'?'<div class="summary">🪨 '+m.summary+'</div>':'')+
       (FILTER_MODE!=='market'?'<div class="summary" style="margin-top:2px">❤️ '+h.summary+'</div>':'')+
-      '<div class="detail"><div class="detail-section"><div class="label">🪨 焦煤铝矿行情</div><div class="value">'+m.detail.replace(/\n/g,'<br>')+'</div></div><div class="detail-section"><div class="label">❤️ 健康简报</div><div class="value">'+h.detail.replace(/\n/g,'<br>')+'</div></div></div></div>';
+      '<div class="detail">'+
+      (it?'<div class="detail-section"><div class="label">🌍 市场情报 · 独立分析</div><div class="value">'+it.detail.replace(/\n/g,'<br>')+'</div></div>':'')+
+      '<div class="detail-section"><div class="label">🪨 焦煤铝矿行情</div><div class="value">'+m.detail.replace(/\n/g,'<br>')+'</div></div><div class="detail-section"><div class="label">❤️ 健康简报</div><div class="value">'+h.detail.replace(/\n/g,'<br>')+'</div></div></div></div>';
   }).join('');
 }
 function filterDays(){renderDays(document.getElementById('searchInput').value)}
