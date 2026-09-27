@@ -10,9 +10,9 @@ var REPORTS = [
       "detail": "【焦煤竞拍】测试条目。【期货】测试。【焦炭】测试。【铝系】测试。"
     },
     "health": {
-      "status": "grey",
-      "summary": "手表数据待同步",
-      "detail": "⌚ 华为手表数据尚未同步。请确保华为健康App已绑定手表并开启数据同步。"
+      "status": "green",
+      "summary": "端到端测试：睡眠7.2h，静息心率62，恢复良好",
+      "detail": "测试条目。"
     },
     "intel": {
       "status": "amber",
