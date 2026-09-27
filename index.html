@@ -605,40 +605,7 @@ tryLoadSources(0, function(ok, url){
     if(c) c.innerHTML='<div class="empty-state"><div class="icon">⚠</div><p>数据加载失败，请检查网络后下拉刷新</p></div>';
   }
 });
-var __dataLoaded = false;
-// 多源竞速：github.io 原始 + 国内可达 CDN（jsdelivr/huaweicloud/fastly）
-var DATA_SOURCES = [
-  'https://cdn.jsdelivr.net/gh/sin1377/report-pwa@main/data.js',
-  'https://sin1377.github.io/report-pwa/data.js',
-  'https://fastly.jsdelivr.net/gh/sin1377/report-pwa@main/data.js',
-  'https://d29xt3x1l3l3fz.cloudfront.net/gh/sin1377/report-pwa@main/data.js',
-  'https://cloudflare-jsdelivr-east.azureedge.net/gh/sin1377/report-pwa@main/data.js',
-  'https://gcore.jsdelivr.net/gh/sin1377/report-pwa@main/data.js'
-];
-function tryLoadSources(i, onDone){
-  if(i >= DATA_SOURCES.length){ onDone(false); return; }
-  var url = DATA_SOURCES[i];
-  var ctl = null;
-  var s = document.createElement('script');
-  var settled = false;
-  var cleanup = function(){ if(ctl) clearTimeout(ctl); s.onload = s.onerror = null; };
-  ctl = setTimeout(function(){ // 8 秒单源超时
-    if(settled) return; settled = true; cleanup();
-    s.parentNode && s.parentNode.removeChild(s);
-    tryLoadSources(i+1, onDone);
-  }, 8000);
-  s.onload = function(){
-    if(settled) return; settled = true; cleanup();
-    if(window.REPORTS && window.REPORTS.length){ onDone(true, url); }
-    else { tryLoadSources(i+1, onDone); }
-  };
-  s.onerror = function(){
-    if(settled) return; settled = true; cleanup();
-    tryLoadSources(i+1, onDone);
-  };
-  s.src = url + '?t=' + Date.now();
-  document.head.appendChild(s);
-}
+
 
 
 var FILTER_MODE = 'all'; // all | market | health | intel
