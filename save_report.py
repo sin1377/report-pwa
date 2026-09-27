@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-save_intel.py — 把市场情报（全球新闻+地缘政治独立分析）写入 APP 数据
-用法: python3 save_intel.py <json文件>
-json 格式: {"summary": "...", "detail": "...", "status": "amber|red|green|grey"}
+save_report.py — 把行情(market)或健康(health)数据写入 APP 的 data.js 并推送 GitHub
+用法:
+  python3 save_report.py market <json文件>
+  python3 save_report.py health <json文件>
+json 格式: {"date":"2026-09-27", "summary":"...", "detail":"...", "status":"grey|amber|red|green"}
 """
-import re, json, sys, subprocess, os
+import re, json, sys, subprocess, os, time
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
@@ -13,10 +15,13 @@ def git(*args):
     return subprocess.run(['git']+list(args), capture_output=True, text=True)
 
 def main():
-    if len(sys.argv) < 2:
-        print('usage: save_intel.py <json>'); sys.exit(1)
-    intel = json.load(open(sys.argv[1]))
-    today = intel.get('date')
+    if len(sys.argv) < 3:
+        print('usage: save_report.py market|health|intel <json>'); sys.exit(1)
+    kind = sys.argv[1]
+    if kind not in ('market', 'health', 'intel'):
+        print('kind must be market/health/intel'); sys.exit(1)
+    payload = json.load(open(sys.argv[2]))
+    today = payload.get('date')
     if not today:
         from datetime import datetime
         today = datetime.now().strftime('%Y-%m-%d')
@@ -37,24 +42,27 @@ def main():
                   "intel":  {"status":"grey","summary":"数据生成中","detail":""}}
         entries.insert(0, target)
 
-    target['intel'] = {
-        'status': intel.get('status', 'amber'),
-        'summary': intel['summary'],
-        'detail': intel['detail']
+    target[kind] = {
+        'status': payload.get('status', 'grey'),
+        'summary': payload.get('summary', ''),
+        'detail': payload.get('detail', '')
     }
-    # 去掉旧占位
-    if 'intel_placeholder' in target:
-        del target['intel_placeholder']
 
     new_js = js[:m.start(2)] + json.dumps(entries, ensure_ascii=False, indent=2) + js[m.end(2):]
     open('data.js', 'w').write(new_js)
 
     git('add', 'data.js')
-    git('commit', '-m', f'Intel update for {today}')
+    git('commit', '-m', f'{kind} update for {today}')
     r = git('push', 'origin', 'main')
     if r.returncode != 0:
-        print('PUSH FAILED:', r.stderr[:300]); sys.exit(1)
-    print(f'OK - intel saved for {today}')
+        # 网络抖动重试最多3次
+        for i in range(3):
+            time.sleep(5)
+            r = git('push', 'origin', 'main')
+            if r.returncode == 0: break
+        if r.returncode != 0:
+            print('PUSH FAILED:', r.stderr[:300]); sys.exit(1)
+    print(f'OK - {kind} saved for {today}')
 
 if __name__ == '__main__':
     main()

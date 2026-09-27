@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Daily update script for the Report Archive PWA.
-Pulls the latest repo state, appends new daily data to index.html,
+Pulls the latest repo state, appends new daily data to data.js,
 commits and pushes to GitHub Pages.
 """
 import os, sys, json, re, subprocess, datetime
@@ -27,19 +27,19 @@ def main():
     # Pull latest
     run('git pull origin main')
     
-    # Read current index.html
-    with open('index.html', 'r') as f:
-        html = f.read()
+# Read current data.js
+    with open('data.js', 'r') as f:
+        js = f.read()
     
     # Check if today's entry already exists
-    if date_str in html:
+    if date_str in js:
         print(f'Entry for {date_str} already exists, skipping')
         return
     
     # Find the REPORTS array
-    match = re.search(r'(var REPORTS\s*=\s*)(\[.*?\]);', html, re.DOTALL)
+    match = re.search(r'(var REPORTS\s*=\s*)(\[.*?\]);', js, re.DOTALL)
     if not match:
-        print('ERROR: Could not find REPORTS array in index.html')
+        print('ERROR: Could not find REPORTS array in data.js')
         return
     
     prefix = match.group(1)
@@ -77,17 +77,17 @@ def main():
     new_array = json.dumps(entries, ensure_ascii=False, indent=2)
     
     # Replace in HTML
-    new_html = html[:match.start(2)] + new_array + html[match.end(2):]
+    new_js = js[:match.start(2)] + new_array + js[match.end(2):]
     
-    with open('index.html', 'w') as f:
-        f.write(new_html)
+    with open('data.js', 'w') as f:
+        f.write(new_js)
     
     # Commit and push
-    run('git add index.html')
+    run('git add data.js')
     run(f'git commit -m "Update data for {date_str}"')
     run('git push origin main')
     
-    print(f'Updated index.html with entry for {date_str}')
+    print(f'Updated data.js with entry for {date_str}')
 
 if __name__ == '__main__':
     main()
