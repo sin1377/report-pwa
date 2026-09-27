@@ -551,12 +551,18 @@ var __dataLoaded = false;
 // 多源竞速：github.io 原始 + 国内可达 CDN（jsdelivr/huaweicloud/fastly）
 var DATA_SOURCES = [
   'https://cdn.jsdelivr.net/gh/sin1377/report-pwa@main/data.js',
-  'https://sin1377.github.io/report-pwa/data.js',
   'https://fastly.jsdelivr.net/gh/sin1377/report-pwa@main/data.js',
   'https://gcore.jsdelivr.net/gh/sin1377/report-pwa@main/data.js',
   'https://test1.jsdelivr.net/gh/sin1377/report-pwa@main/data.js',
-  'https://cdn.statically.io/gh/sin1377/report-pwa@main/data.js'
+  'https://raw.githubusercontent.com/sin1377/report-pwa/main/data.js',
+  'https://sin1377.github.io/report-pwa/data.js'
 ];
+// ⚠️ jsdelivr 类 CDN 缓存约10分钟：若返回的数据不是今天，自动切换下一个源
+function isFresh(){
+  var today = new Date();
+  var ds = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
+  return window.REPORTS && window.REPORTS.length && window.REPORTS[0].date === ds;
+}
 function tryLoadSources(i, onDone){
   if(i >= DATA_SOURCES.length){ onDone(false); return; }
   var url = DATA_SOURCES[i];
@@ -564,15 +570,18 @@ function tryLoadSources(i, onDone){
   var s = document.createElement('script');
   var settled = false;
   var cleanup = function(){ if(ctl) clearTimeout(ctl); s.onload = s.onerror = null; };
-  ctl = setTimeout(function(){ // 8 秒单源超时
+  ctl = setTimeout(function(){ // 6 秒单源超时
     if(settled) return; settled = true; cleanup();
     s.parentNode && s.parentNode.removeChild(s);
     tryLoadSources(i+1, onDone);
-  }, 8000);
+  }, 6000);
   s.onload = function(){
     if(settled) return; settled = true; cleanup();
-    if(window.REPORTS && window.REPORTS.length){ onDone(true, url); }
-    else { tryLoadSources(i+1, onDone); }
+    if(window.REPORTS && window.REPORTS.length && isFresh()){ onDone(true, url); }
+    else {
+      // 数据非今日（CDN缓存旧）或为空，切下一个源
+      tryLoadSources(i+1, onDone);
+    }
   };
   s.onerror = function(){
     if(settled) return; settled = true; cleanup();
@@ -630,21 +639,7 @@ function tryLoadSources(i, onDone){
   s.src = url + '?t=' + Date.now();
   document.head.appendChild(s);
 }
-function applyData(){
-  __dataLoaded = true;
-  renderStats(); renderDays();
-  var now=new Date();
-  var el=document.getElementById('lastUpdate');
-  if(el) el.textContent='上次同步: '+now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
-}
-// 启动：先用内嵌最小骨架（无数据提示），随后竞速拉取
-tryLoadSources(0, function(ok, url){
-  if(ok){ applyData(); }
-  else {
-    var c=document.getElementById('dayList');
-    if(c) c.innerHTML='<div class="empty-state"><div class="icon">⚠</div><p>数据加载失败，请检查网络后下拉刷新</p></div>';
-  }
-});
+
 
 var FILTER_MODE = 'all'; // all | market | health | intel
 var JUMP_DATE = null;  // 当前选中的日期胶囊
