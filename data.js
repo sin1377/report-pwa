@@ -11,8 +11,8 @@ var REPORTS = [
     },
     "health": {
       "status": "grey",
-      "summary": "手表数据待同步",
-      "detail": "⌚ 华为手表数据尚未同步。请确保华为健康App已绑定手表并开启数据同步。"
+      "summary": "",
+      "detail": ""
     },
     "intel": {
       "status": "amber",
