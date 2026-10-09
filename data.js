@@ -11,7 +11,7 @@ var REPORTS = [
     },
     "health": {
       "status": "grey",
-      "summary": "数据生成中",
+      "summary": "",
       "detail": ""
     },
     "intel": {
